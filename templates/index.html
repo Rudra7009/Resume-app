@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InQview - Resume Analysis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: gilroy, sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #111;
+            color: #fff;
+            height: 100vh;
+            font-size: 1vw;
+        }
+
+        /* Navbar Styling */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 12vh;
+            padding: 2vw 10.4vw;
+            background-color: #111;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        nav h1 {
+            font-size: 2.5vw;
+            font-weight: 600;
+        }
+
+        nav button {
+            background-color: #0BA34E;
+            padding: 12px 20px;
+            font-size: 0.85vw;
+            font-weight: 700;
+            border-radius: 50px;
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        nav button:hover {
+            background-color: #09832f;
+        }
+
+        nav button svg {
+            height: 1vw;
+            margin-left: 1vw;
+        }
+
+        /* Page Sections */
+        .page-section {
+            height: 100vh;
+            width: 100%;
+            background-color: #111;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 10vw;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .page-section.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Upload Section */
+        #uploadSection {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #uploadSection h1 {
+            font-size: 6vw;
+            font-weight: 900;
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 2vh;
+        }
+
+        #uploadForm {
+            background-color: #222;
+            padding: 2.5vw;
+            border-radius: 15px;
+            width: 35%;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        input[type="file"] {
+            margin: 1.5vw 0;
+            padding: 0.5vw;
+            width: 100%;
+            border-radius: 5px;
+            background-color: #333;
+            color: #fff;
+            font-size: 1vw;
+            border: none;
+        }
+
+        .upload-btn {
+            padding: 12px 30px;
+            background-color: #007BFF;
+            color: white;
+            font-size: 1.2vw;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 2vh;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Error Message Styling */
+        .error-message {
+            background-color: #ff4d4d;
+            color: white;
+            padding: 1vw;
+            border-radius: 5px;
+            margin-top: 1vh;
+            display: none;
+        }
+
+        /* Loading Spinner */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0BA34E;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin: 1vw auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Results Sections */
+        #resumeContentSection, #jobMatchSection {
+            justify-content: flex-start;
+            padding-top: 15vh;
+        }
+
+        .results-container {
+            width: 80%;
+            background-color: #222;
+            padding: 3vw;
+            border-radius: 15px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .results-container h2 {
+            font-size: 2.5vw;
+            margin-bottom: 2vh;
+            color: #0BA34E;
+        }
+
+        .results-container p, 
+        .results-container ul {
+            font-size: 1.2vw;
+            line-height: 1.6;
+            margin-bottom: 1.5vh;
+        }
+
+        .match-percentage {
+            font-size: 4vw;
+            color: #0BA34E;
+            text-align: center;
+            margin: 2vh 0;
+        }
+
+        .section-analysis {
+            background-color: #333;
+            padding: 1.5vw;
+            border-radius: 10px;
+            margin-bottom: 1.5vh;
+        }
+
+        .section-title {
+            color: #007BFF;
+            font-size: 1.5vw;
+            margin-bottom: 1vh;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <h1>InQview</h1>
+        <button>
+            Analyze Resume
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+        </button>
+    </nav>
+
+    <!-- Upload Section -->
+    <section id="uploadSection" class="page-section active">
+        <h1>Resume Analysis</h1>
+        <form id="uploadForm">
+            <input type="file" id="resumeUpload" accept=".pdf,.docx,.txt" required>
+            <button type="submit" class="upload-btn">Upload Resume</button>
+            <div class="error-message" id="errorMessage"></div>
+            <div class="loader" id="loader"></div>
+        </form>
+    </section>
+
+    <!-- Resume Content Section -->
+    <section id="resumeContentSection" class="page-section">
+        <div class="results-container">
+            <h2>Resume Content</h2>
+            <div id="resumeContentDisplay"></div>
+        </div>
+    </section>
+
+    <!-- Job Match Section -->
+    <section id="jobMatchSection" class="page-section">
+        <div class="results-container">
+            <h2>Job Match Analysis</h2>
+            <div class="match-percentage" id="matchPercentage">0%</div>
+            <div id="sectionAnalysis"></div>
+        </div>
+    </section>
+    <!-- Navigation to Mock Page -->
+        <div style="width: 100%; text-align: center; margin-top: 3vh;">
+            <button class="upload-btn" onclick="location.href='mock.html'">Go to Mock Page</button>
+        </div>        
+    
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const uploadForm = document.getElementById('uploadForm');
+            const resumeUpload = document.getElementById('resumeUpload');
+            const errorMessage = document.getElementById('errorMessage');
+            const loader = document.getElementById('loader');
+            const uploadSection = document.getElementById('uploadSection');
+            const resumeContentSection = document.getElementById('resumeContentSection');
+            const jobMatchSection = document.getElementById('jobMatchSection');
+            const resumeContentDisplay = document.getElementById('resumeContentDisplay');
+            const matchPercentage = document.getElementById('matchPercentage');
+            const sectionAnalysis = document.getElementById('sectionAnalysis');
+
+            uploadForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                // Reset previous states
+                errorMessage.style.display = 'none';
+                loader.style.display = 'block';
+
+                const file = resumeUpload.files[0];
+                if (!file) {
+                    errorMessage.textContent = 'Please select a file to upload.';
+                    errorMessage.style.display = 'block';
+                    loader.style.display = 'none';
+                    return;
+                }
+
+                // Simulate file upload and analysis
+                try {
+                    // In a real application, this would be an actual API call
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // Hide loader
+                    loader.style.display = 'none';
+
+                    // Show sections
+                    resumeContentSection.classList.add('active');
+                    jobMatchSection.classList.add('active');
+
+                    // Populate resume content (mock data)
+                    resumeContentDisplay.innerHTML = `
+                        <div class="section-analysis">
+                            <h3 class="section-title">Professional Summary</h3>
+                            <p>Experienced software engineer with 5+ years of expertise in full-stack development and cloud technologies.</p>
+                        </div>
+                        <div class="section-analysis">
+                            <h3 class="section-title">Work Experience</h3>
+                            <ul>
+                                <li>Senior Software Engineer at Tech Innovations Inc. (2020-2023)</li>
+                                <li>Software Developer at Digital Solutions LLC (2018-2020)</li>
+                            </ul>
+                        </div>
+                    `;
+
+                    // Populate job match analysis (mock data)
+                    matchPercentage.textContent = '85%';
+                    sectionAnalysis.innerHTML = `
+                        <div class="section-analysis">
+                            <h3 class="section-title">Strengths</h3>
+                            <ul>
+                                <li>Strong match in technical skills</li>
+                                <li>Relevant work experience</li>
+                                <li>Demonstrated project leadership</li>
+                            </ul>
+                        </div>
+                        <div class="section-analysis">
+                            <h3 class="section-title">Areas for Improvement</h3>
+                            <ul>
+                                <li>Could elaborate on specific cloud technologies</li>
+                                <li>Add more quantifiable achievements</li>
+                            </ul>
+                        </div>
+                    `;
+
+                } catch (error) {
+                    errorMessage.textContent = 'Error uploading file. Please try again.';
+                    errorMessage.style.display = 'block';
+                    loader.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
